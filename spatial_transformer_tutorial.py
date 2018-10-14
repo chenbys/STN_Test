@@ -7,22 +7,7 @@ import torchvision
 from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 import numpy as np
-
-plt.ion()
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-train_loader = torch.utils.data.DataLoader(
-    datasets.MNIST(root='.', train=True, download=True,
-                   transform=transforms.Compose([
-                       transforms.ToTensor(),
-                       transforms.Normalize((0.1307,), (0.3081,))
-                   ])), batch_size=64, shuffle=True, num_workers=4)
-test_loader = torch.utils.data.DataLoader(
-    datasets.MNIST(root='.', train=False, transform=transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
-    ])), batch_size=64, shuffle=True, num_workers=4)
+import time
 
 
 class Net(nn.Module):
@@ -74,11 +59,6 @@ class Net(nn.Module):
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
-
-
-model = Net().to(device)
-
-optimizer = optim.SGD(model.parameters(), lr=0.01)
 
 
 def train(epoch):
@@ -147,11 +127,28 @@ def visualize_stn():
         axarr[1].set_title('Transformed Images')
 
 
-for epoch in range(1, 20 + 1):
-    train(epoch)
-    test()
+if __name__ == '__main__':
 
-visualize_stn()
+    plt.ion()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(device)
+    train_set = datasets.MNIST(root='.', train=True, download=True, transform=transforms.Compose([
+        transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]))
+    test_set = datasets.MNIST(root='.', train=False, transform=transforms.Compose([
+        transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]))
+    train_loader = torch.utils.data.DataLoader(train_set, batch_size=64, shuffle=True, num_workers=1)
+    test_loader = torch.utils.data.DataLoader(test_set, batch_size=64, shuffle=True, num_workers=1)
 
-plt.ioff()
-plt.show()
+    model = Net().to(device)
+
+    optimizer = optim.SGD(model.parameters(), lr=0.01)
+    for epoch in range(1, 20 + 1):
+        t1, t2 = time.time(), time.clock()
+        train(epoch)
+        t3, t4 = time.time(), time.clock()
+        print(f'time:{t3-51},clock:{t4-t2} for one training epoch.')
+        test()
+
+    visualize_stn()
+    plt.ioff()
+    plt.show()
