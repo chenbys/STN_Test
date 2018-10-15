@@ -86,11 +86,12 @@ def visualize_stn():
 
 def get_modified_mnist():
     train_set = datasets.MNIST(root='.', train=True, download=True, transform=transforms.Compose([
-        models.DoubleGauss(),
         transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]))
     test_set = datasets.MNIST(root='.', train=False, transform=transforms.Compose([
-        models.DoubleGauss(),
         transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]))
+
+    train_set.train_labels[train_set.train_labels == 9] = 6
+    test_set.test_labels[test_set.test_labels == 9] = 6
 
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=64, shuffle=True, num_workers=4)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=64, shuffle=True, num_workers=4)
